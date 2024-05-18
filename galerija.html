@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>galerija</title>
+<style>
+  body {
+    animation: backgroundAnimation 10s linear infinite alternate;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  @keyframes backgroundAnimation {
+    0% {
+      background-color: #000000;
+    }
+    50% {
+      background-color: #ffffff;
+    }
+    100% {
+      background-color: #000000;
+    }
+  }
+  
+  .gallery {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 20px 0;
+    scroll-snap-type: x mandatory;
+  }
+  .photo {
+    flex: 0 0 auto;
+    margin: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    scroll-snap-align: start;
+  }
+  .photo img {
+    max-width: 200px;
+    max-height: 200px;
+  }
+  #fileInput {
+    display: none;
+  }
+  #addPhotoBtn, #removePhotoBtn {
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="gallery" id="gallery"></div>
+
+<input type="file" id="fileInput" accept="image/*" multiple>
+<button id="addPhotoBtn">pielikt foto</button>
+<button id="removePhotoBtn">noņemt foto</button>
+
+<script>
+  const gallery = document.getElementById('gallery');
+  const fileInput = document.getElementById('fileInput');
+  const addPhotoBtn = document.getElementById('addPhotoBtn');
+  const removePhotoBtn = document.getElementById('removePhotoBtn');
+
+  window.addEventListener('load', () => {
+    const savedPhotos = JSON.parse(localStorage.getItem('galleryPhotos')) || [];
+    savedPhotos.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.classList.add('photo');
+        gallery.appendChild(img);
+    });
+  });
+
+  addPhotoBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', (event) => {
+    const files = event.target.files;
+
+    for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.classList.add('photo');
+            gallery.appendChild(img);
+
+            const savedPhotos = JSON.parse(localStorage.getItem('galleryPhotos')) || [];
+            savedPhotos.push(e.target.result);
+            localStorage.setItem('galleryPhotos', JSON.stringify(savedPhotos));
+        };
+
+        reader.readAsDataURL(files[i]);
+    }
+  });
+
+  removePhotoBtn.addEventListener('click', () => {
+    const photos = gallery.getElementsByClassName('photo');
+    if (photos.length > 0) {
+      const lastPhotoSrc = photos[photos.length - 1].src;
+      gallery.removeChild(photos[photos.length - 1]);
+
+      const savedPhotos = JSON.parse(localStorage.getItem('galleryPhotos')) || [];
+      const updatedPhotos = savedPhotos.filter(src => src !== lastPhotoSrc);
+      localStorage.setItem('galleryPhotos', JSON.stringify(updatedPhotos));
+    }
+  });
+</script>
+
+</body>
+</html>
